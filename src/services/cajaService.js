@@ -28,6 +28,19 @@ function resumen(vendedorId, fecha = fechaLocal()) {
   };
 }
 
+/**
+ * Realiza el cierre de caja diario de un vendedor.
+ *
+ * Calcula el resumen del día, compara el saldo esperado contra el efectivo
+ * reportado y clasifica el cierre como CUADRADA, SOBRANTE o FALTANTE. Impide
+ * cerrar dos veces la misma fecha.
+ *
+ * @param {number} vendedorId - Identificador del vendedor.
+ * @param {{efectivoReportado: number, fecha?: string}} datos
+ *   Efectivo contado y fecha opcional (por defecto la fecha local).
+ * @returns {Object} Cierre de caja registrado con la diferencia calculada.
+ * @throws {AppError} Si el efectivo es inválido o la caja ya está cerrada (409).
+ */
 function cerrar(vendedorId, { efectivoReportado, fecha = fechaLocal() }) {
   if (!Number.isInteger(efectivoReportado) || efectivoReportado < 0) {
     throw new AppError('El efectivo reportado debe ser un entero positivo');

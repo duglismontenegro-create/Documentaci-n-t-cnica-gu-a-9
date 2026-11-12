@@ -14,6 +14,19 @@ function permutaciones(numero) {
   return resultado;
 }
 
+/**
+ * Valida y normaliza una apuesta de chance.
+ *
+ * Comprueba el formato del número (1 a 4 dígitos), la modalidad, el monto
+ * permitido y que el valor sea múltiplo de 100. En modalidad COMBINADO
+ * exige al menos 3 cifras y que no todas sean iguales.
+ *
+ * @param {{numero: string, modalidad?: 'DIRECTO'|'COMBINADO', valor: number}} apuesta
+ *   Datos de la apuesta enviada por el cliente.
+ * @returns {{numero: string, cifras: number, modalidad: string, valor: number}}
+ *   Apuesta validada y lista para almacenarse.
+ * @throws {AppError} Si el número, la modalidad o el valor no cumplen las reglas.
+ */
 function validarApuesta(apuesta) {
   const { numero, modalidad = 'DIRECTO', valor } = apuesta || {};
 
@@ -39,6 +52,18 @@ function validarApuesta(apuesta) {
   return { numero, cifras: numero.length, modalidad, valor };
 }
 
+/**
+ * Calcula el premio de una apuesta de chance frente al resultado oficial.
+ *
+ * En modalidad DIRECTO compara el número completo con las últimas cifras del
+ * resultado. En modalidad COMBINADO considera cualquier permutación del número
+ * y reparte el premio entre la cantidad de combinaciones posibles.
+ *
+ * @param {{numero: string, cifras: number, modalidad: string, valor: number}} apuesta
+ *   Apuesta previamente validada.
+ * @param {string} resultado - Resultado oficial del sorteo (4 dígitos).
+ * @returns {number} Valor del premio en pesos; 0 si la apuesta no gana.
+ */
 function calcularPremio(apuesta, resultado) {
   const ganador = resultado.slice(-apuesta.cifras);
   const factor = TABLA_PAGOS[apuesta.cifras];

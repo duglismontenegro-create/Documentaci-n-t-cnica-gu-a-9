@@ -3,6 +3,19 @@ const { jwtSecret } = require('../config');
 const { buscarPorId } = require('../services/authService');
 const AppError = require('../utils/AppError');
 
+/**
+ * Middleware de autenticación basado en JWT.
+ *
+ * Lee el encabezado `Authorization: Bearer <token>`, verifica la firma y
+ * expiración del token, carga el usuario activo y lo adjunta en `req.usuario`.
+ *
+ * @param {import('express').Request} req - Petición HTTP.
+ * @param {import('express').Response} res - Respuesta HTTP.
+ * @param {import('express').NextFunction} next - Siguiente middleware.
+ * @returns {void}
+ * @throws {AppError} 401 si el token falta, es inválido, expiró o el usuario
+ *   no está activo.
+ */
 function autenticar(req, res, next) {
   const [esquema, token] = (req.headers.authorization || '').split(' ');
   if (esquema !== 'Bearer' || !token) return next(new AppError('Token requerido', 401));

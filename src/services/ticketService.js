@@ -17,6 +17,18 @@ function guardar(ticket) {
   return ticket;
 }
 
+/**
+ * Registra la venta de un tiquete de chance.
+ *
+ * Verifica que el sorteo esté abierto y acepte ventas, valida entre 1 y 5
+ * apuestas y genera el código único, el total y el estado inicial ACTIVO.
+ *
+ * @param {{id: number, rol: string}} vendedor - Usuario autenticado que vende.
+ * @param {{sorteoId: number, apuestas: Array<Object>, cliente?: string}} datos
+ *   Sorteo, apuestas y cliente opcional.
+ * @returns {Object} Tiquete de chance almacenado.
+ * @throws {AppError} Si el sorteo no permite ventas o las apuestas son inválidas.
+ */
 function venderChance(vendedor, { sorteoId, apuestas, cliente }) {
   const sorteo = sorteos.obtener(sorteoId);
   sorteos.verificarVentaPermitida(sorteo, 'CHANCE');
@@ -88,6 +100,20 @@ function consultar(codigo) {
   };
 }
 
+/**
+ * Anula un tiquete de chance o Baloto.
+ *
+ * Aplica reglas de negocio: solo el vendedor dueño o un ADMIN pueden anular,
+ * el tiquete debe estar ACTIVO, el sorteo no debe haberse jugado, debe estar
+ * dentro de la ventana de anulación (salvo ADMIN) y exige un motivo.
+ *
+ * @param {string} codigo - Código único del tiquete.
+ * @param {{id: number, rol: string}} usuario - Usuario que solicita la anulación.
+ * @param {string} motivo - Motivo de la anulación.
+ * @returns {Object} Tiquete actualizado en estado ANULADO.
+ * @throws {AppError} 404 si no existe, 403 si no tiene permiso o 409 si el
+ *   estado o el tiempo no permiten la anulación.
+ */
 function anular(codigo, usuario, motivo) {
   const ticket = buscar(codigo);
 
@@ -108,6 +134,19 @@ function anular(codigo, usuario, motivo) {
   return ticket;
 }
 
+/**
+ * Paga el premio de un tiquete ganador.
+ *
+ * Exige que el sorteo ya se haya jugado, que el tiquete esté ACTIVO, que tenga
+ * premio y que no haya superado los días de caducidad configurados. Registra el
+ * pago y marca el tiquete como PAGADO.
+ *
+ * @param {string} codigo - Código único del tiquete.
+ * @param {{id: number, rol: string}} usuario - Usuario que procesa el pago.
+ * @returns {{id: number, ticketId: number, codigo: string, usuarioId: number, valor: number, fecha: string}}
+ *   Comprobante del pago registrado.
+ * @throws {AppError} 409 si no es pagable o 410 si el premio está caducado.
+ */
 function pagarPremio(codigo, usuario) {
   const ticket = buscar(codigo);
   const sorteo = sorteos.obtener(ticket.sorteoId);
